@@ -36,7 +36,7 @@ public final class RouteTable<T extends INode> {
     public void addNode(T node) {
         assert node != null;
 
-        String key = System.currentTimeMillis() + node.getIp();
+        String key = node.getKey();
         long hashed = this.hashFunc.doHash(key);
         if (ring.containsKey(hashed)) {
             throw new IllegalStateException("Contains duplicate key");
