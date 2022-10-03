@@ -33,7 +33,7 @@ public final class RouteTable<T extends INode> {
         return node instanceof VirtualNode ? ((VirtualNode) node).getNode() : node;
     }
 
-    public void addNode(T node) {
+    public synchronized void addNode(T node) {
         assert node != null;
 
         String key = node.getKey();
@@ -44,7 +44,7 @@ public final class RouteTable<T extends INode> {
         ring.put(hashed, node);
     }
 
-    public T removeNode(String key) {
+    public synchronized T removeNode(String key) {
         assert key != null;
 
         if (!ring.containsKey(key)) {
