@@ -11,19 +11,22 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public final class LoadBalancer {
-    public static final void main(String[] args) {
+    public static void main(String[] args) {
         Node node = new Node("127.0.0.1", "80");
-        List<INode> nodes = Arrays.asList(new Node("127.0.0.1", "80"), new Node("127.0.0.2", "80"),
+        List<INode> nodes = Arrays.asList(node, new Node("127.0.0.2", "80"),
                 new Node("127.0.0.3", "80"), new Node("127.0.0.4", "80"),
                 new VirtualNode(node, 0),
                 new VirtualNode(node, 1),
                 new VirtualNode(node, 2),
                 new VirtualNode(node, 3));
-        RouteTable table = new RouteTable(nodes);
+        RouteTable<INode> table = new RouteTable<>(nodes);
 
         ExecutorService executor = Executors.newFixedThreadPool(15);
         // get random server
-        for (int i = 1; i < 10; ++i) {
+        for (int i = 0; i < 25; ++i) {
+            if (i == 15) {
+                table.removeNode(node);
+            }
             executor.submit(new Runner(i, table));
         }
         executor.shutdown();
@@ -31,9 +34,9 @@ public final class LoadBalancer {
 
     static class Runner implements Runnable {
         private int index;
-        private RouteTable table;
+        private RouteTable<INode> table;
 
-        public Runner(int index, RouteTable table) {
+        public Runner(int index, RouteTable<INode> table) {
             this.index = index;
             this.table = table;
         }
