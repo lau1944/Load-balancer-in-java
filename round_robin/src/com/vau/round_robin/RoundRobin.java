@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public final class RoundRobin {
-    private volatile AtomicInteger reqCount;
+    private volatile int reqCount;
     private List<INode> nodes = new ArrayList<>();
 
     public RoundRobin() {
@@ -19,7 +19,7 @@ public final class RoundRobin {
     }
 
     public RoundRobin(int startCount, Collection<INode> nodes) {
-        this.reqCount = new AtomicInteger(startCount);
+        this.reqCount = startCount;
         addToNode(nodes);
     }
 
@@ -43,11 +43,11 @@ public final class RoundRobin {
         return this.nodes;
     }
 
-    public INode getServer() {
+    public synchronized INode getServer() {
         if (this.nodes.isEmpty()) {
             throw new IllegalStateException("Server list is empty");
         }
-        int index = reqCount.getAndAdd(1) % this.nodes.size();
+        int index = reqCount++ % this.nodes.size();
         return this.nodes.get(index);
     }
 }
