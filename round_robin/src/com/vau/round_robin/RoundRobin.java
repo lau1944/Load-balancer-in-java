@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public final class RoundRobin {
     private volatile int reqCount;
@@ -31,11 +30,22 @@ public final class RoundRobin {
         }
     }
 
-    public void addNode(INode node) {
+    public synchronized void addNode(INode node) {
+        assert node != null;
+
+        if (this.nodes.contains(node) ) {
+            throw new IllegalStateException("This node is already exists");
+        }
+
+        boolean isDuplicated = this.nodes.stream()
+                .anyMatch(e -> e.getIp() == node.getIp() && e.getPort() == node.getPort());
+        if (isDuplicated) {
+            throw new IllegalStateException("Node is duplicated");
+        }
         this.nodes.add(node);
     }
 
-    public void removeNode(int index) {
+    public synchronized void removeNode(int index) {
         this.nodes.remove(index);
     }
 

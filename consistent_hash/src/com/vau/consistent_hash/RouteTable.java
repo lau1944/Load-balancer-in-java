@@ -30,7 +30,14 @@ public final class RouteTable<T extends INode> {
         SortedMap<Long, T> tailMap = ring.tailMap(hashed);
         long hashVal = tailMap.isEmpty() ? ring.firstKey() : tailMap.firstKey();
         INode node = ring.get(hashVal);
-        return node instanceof VirtualNode ? ((VirtualNode) node).getNode() : node;
+        node = node instanceof VirtualNode ? ((VirtualNode) node).getNode() : node;
+
+        // in case of key removal
+        if (!ring.containsValue(node)) {
+            return getNode(key);
+        }
+
+        return node;
     }
 
     public synchronized void addNode(T node) {
@@ -44,14 +51,14 @@ public final class RouteTable<T extends INode> {
         ring.put(hashed, node);
     }
 
-    public synchronized T removeNode(String key) {
-        assert key != null;
+    public synchronized void removeNode(T node) {
+        assert node != null;
 
-        if (!ring.containsKey(key)) {
-            throw new IllegalArgumentException("Does not contain value related to this key");
+        String key = node.getKey();
+        long hashed = this.hashFunc.doHash(key);
+        if (ring.containsKey(hashed)) {
+            ring.remove(hashed);
         }
-
-        return ring.remove(key);
     }
 
     private void initRing(Collection<T> nodes) {
